@@ -32,7 +32,7 @@ import android.graphics.drawable.shapes.OvalShape;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.v7.preference.*;
+import androidx.preference.*;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
