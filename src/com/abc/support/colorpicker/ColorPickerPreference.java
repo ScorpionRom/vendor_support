@@ -74,7 +74,7 @@ public class ColorPickerPreference extends Preference implements
 
     private EditText mEditText;
 
-    private boolean mIsCrappyLedDevice;
+    //private boolean mIsCrappyLedDevice;
 
     public ColorPickerPreference(Context context) {
         super(context);
@@ -102,7 +102,7 @@ public class ColorPickerPreference extends Preference implements
     }
 
     private void init(Context context, AttributeSet attrs) {
-        mIsCrappyLedDevice = getContext().getResources().getBoolean(com.android.internal.R.bool.config_isCrappyLedDevice);
+        /*mIsCrappyLedDevice = getContext().getResources().getBoolean(com.android.internal.R.bool.config_isCrappyLedDevice);*/
         mDensity = getContext().getResources().getDisplayMetrics().density;
         setOnPreferenceClickListener(this);
         if (attrs != null) {
@@ -271,10 +271,10 @@ public class ColorPickerPreference extends Preference implements
     }
 
     protected void showDialog(Bundle state) {
-        if (mIsCrappyLedDevice && (mShowLedPreview || mIsLedColorPicker)) {
+        /*if (mIsCrappyLedDevice && (mShowLedPreview || mIsLedColorPicker)) {
             showSimplePickerDialog();
             return;
-        }
+        }*/
 
         mDialog = new ColorPickerDialog(getContext(), mValue, mShowLedPreview);
         mDialog.setOnColorChangedListener(this);
@@ -496,21 +496,21 @@ public class ColorPickerPreference extends Preference implements
     @Override
     protected Parcelable onSaveInstanceState() {
         final Parcelable superState = super.onSaveInstanceState();
-        if (mIsCrappyLedDevice && (mShowLedPreview || mIsLedColorPicker)) {
+        /*if (mIsCrappyLedDevice && (mShowLedPreview || mIsLedColorPicker)) {
             if (mSimpleDialog == null || !mSimpleDialog.isShowing()) {
                 return superState;
             }
             final SavedState myState = new SavedState(superState);
             myState.dialogBundle = mSimpleDialog.onSaveInstanceState();
             return myState;
-        } else {
+        } else {*/
             if (mDialog == null || !mDialog.isShowing()) {
                 return superState;
             }
             final SavedState myState = new SavedState(superState);
             myState.dialogBundle = mDialog.onSaveInstanceState();
             return myState;
-        }
+        //}
     }
 
     @Override
