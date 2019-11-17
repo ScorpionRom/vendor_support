@@ -57,38 +57,34 @@ public class ColorPickerPreference extends Preference implements
     private static final String ANDROIDNS = "http://schemas.android.com/apk/res/android";
 
     PreferenceViewHolder mView;
+    LinearLayout mWidgetFrameView;
     ColorPickerDialog mDialog;
     AlertDialog mSimpleDialog;
-    LinearLayout widgetFrameView;
-    private int mValue = Color.BLACK;
+    private int mDefaultValue = Color.BLACK;
+    private int mCurrentValue = mDefaultValue;
     private float mDensity = 0;
     private boolean mAlphaSliderEnabled = false;
-    //private boolean mEnabled = true;
-
-    // if we return -6, button is not enabled
-    static final int DEF_VALUE_DEFAULT = -6;
-    boolean mUsesDefaultButton = false;
-    int mDefValue = -1;
-
-    private boolean mShowLedPreview;
     private boolean mIsLedColorPicker;
-
+    private boolean mShowLedPreview;
     private EditText mEditText;
 
     //private boolean mIsCrappyLedDevice;
 
-    public ColorPickerPreference(Context context) {
-        super(context);
-        init(context, null);
+    public ColorPickerPreference(Context context, AttributeSet attrs, int defStyleAttr) {
+        this(context, attrs, defStyleAttr, 0);
     }
 
     public ColorPickerPreference(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(context, attrs);
+        this(context, attrs, 0);
     }
 
-    public ColorPickerPreference(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
+    public ColorPickerPreference(Context context) {
+        this(context, null);
+    }
+
+    public ColorPickerPreference(Context context, AttributeSet attrs, int defStyleAttr,
+            int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
         init(context, attrs);
     }
 
@@ -107,8 +103,8 @@ public class ColorPickerPreference extends Preference implements
             // if we forgot to add android:defaultValue, default to black color
             defaultValue = Color.BLACK;
         }
-        mValue = getPersistedInt((Integer) defaultValue);
-        onColorChanged(mValue);
+        mCurrentValue = getPersistedInt((Integer) defaultValue);
+        onColorChanged(mCurrentValue);
     }
 
     private void init(Context context, AttributeSet attrs) {
@@ -117,11 +113,7 @@ public class ColorPickerPreference extends Preference implements
         setOnPreferenceClickListener(this);
         if (attrs != null) {
             mAlphaSliderEnabled = attrs.getAttributeBooleanValue(null, "alphaSlider", false);
-            int defVal = attrs.getAttributeIntValue(ANDROIDNS, "defaultValue", DEF_VALUE_DEFAULT);
-            if (defVal != DEF_VALUE_DEFAULT) {
-                mUsesDefaultButton =  true;
-                mDefValue = defVal;
-            }
+            mDefaultValue = attrs.getAttributeIntValue(ANDROIDNS, "defaultValue", Color.BLACK);
             mShowLedPreview = attrs.getAttributeBooleanValue(null, "ledPreview", false);
             mIsLedColorPicker = attrs.getAttributeBooleanValue(null, "isledPicker", false);
         }
@@ -138,14 +130,18 @@ public class ColorPickerPreference extends Preference implements
                 showDialog(null);
             }
         });
-
-        widgetFrameView = ((LinearLayout) view
+        mWidgetFrameView = ((LinearLayout) view
                 .findViewById(android.R.id.widget_frame));
-
-        if (mUsesDefaultButton) {
-            setDefaultButton();
-        }
-
+        mWidgetFrameView.setOrientation(LinearLayout.HORIZONTAL);
+        mWidgetFrameView.setVisibility(View.VISIBLE);
+        mWidgetFrameView.setMinimumWidth(0);
+        mWidgetFrameView.setPadding(
+                mWidgetFrameView.getPaddingLeft(),
+                mWidgetFrameView.getPaddingTop(),
+                (int) (mDensity * 8),
+                mWidgetFrameView.getPaddingBottom()
+                );
+        setDefaultButton();
         setPreviewColor();
     }
 
@@ -156,107 +152,63 @@ public class ColorPickerPreference extends Preference implements
      * @author Randall Rushing aka Bigrushdog
      */
     private void setDefaultButton() {
-        if (mView == null)
-            return;
-
-        LinearLayout widgetFrameView = ((LinearLayout) mView
-                .findViewById(android.R.id.widget_frame));
-        if (widgetFrameView == null)
+        if (mView == null || mWidgetFrameView == null)
             return;
 
         ImageView defView = new ImageView(getContext());
-        widgetFrameView.setOrientation(LinearLayout.HORIZONTAL);
-
         // remove already created default button
-        int count = widgetFrameView.getChildCount();
+        int count = mWidgetFrameView.getChildCount();
         if (count > 0) {
-            View oldView = widgetFrameView.findViewWithTag("default");
-            View spacer = widgetFrameView.findViewWithTag("spacer");
+            View oldView = mWidgetFrameView.findViewWithTag("default");
+            View spacer = mWidgetFrameView.findViewWithTag("spacer");
             if (oldView != null) {
-                widgetFrameView.removeView(oldView);
+                mWidgetFrameView.removeView(oldView);
             }
             if (spacer != null) {
-                widgetFrameView.removeView(spacer);
+                mWidgetFrameView.removeView(spacer);
             }
         }
-
-        widgetFrameView.addView(defView);
-        widgetFrameView.setMinimumWidth(0);
-        defView.setBackground(getContext().getDrawable(R.drawable.ic_settings_backup_restore));
+        mWidgetFrameView.addView(defView);
+        defView.setImageDrawable(getContext().getDrawable(R.drawable.ic_settings_backup_restore));
         defView.setTag("default");
         defView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    getOnPreferenceChangeListener().onPreferenceChange(ColorPickerPreference.this,
-                            Integer.valueOf(mDefValue));
-                    onColorChanged(mDefValue);
-                } catch (NullPointerException e) {
-                }
+                onColorChanged(mDefaultValue);
             }
         });
-
         // sorcery for a linear layout ugh
         View spacer = new View(getContext());
         spacer.setTag("spacer");
         spacer.setLayoutParams(new LinearLayout.LayoutParams((int) (mDensity * 16),
                 LayoutParams.MATCH_PARENT));
-        widgetFrameView.addView(spacer);
+        mWidgetFrameView.addView(spacer);
     }
 
     private void setPreviewColor() {
-        if (mView == null)
+        if (mView == null || mWidgetFrameView == null)
             return;
 
         ImageView iView = new ImageView(getContext());
-        LinearLayout widgetFrameView = ((LinearLayout) mView
-                .findViewById(android.R.id.widget_frame));
-        if (widgetFrameView == null)
-            return;
-
-        widgetFrameView.setVisibility(View.VISIBLE);
-        widgetFrameView.setPadding(
-                widgetFrameView.getPaddingLeft(),
-                widgetFrameView.getPaddingTop(),
-                (int) (mDensity * 8),
-                widgetFrameView.getPaddingBottom()
-                );
         // remove already create preview image
-        int count = widgetFrameView.getChildCount();
+        int count = mWidgetFrameView.getChildCount();
         if (count > 0) {
-            View preview = widgetFrameView.findViewWithTag("preview");
+            View preview = mWidgetFrameView.findViewWithTag("preview");
             if (preview != null) {
-                widgetFrameView.removeView(preview);
+                mWidgetFrameView.removeView(preview);
             }
         }
-        widgetFrameView.addView(iView);
-        widgetFrameView.setMinimumWidth(0);
+        mWidgetFrameView.addView(iView);
         final int size = (int) getContext().getResources().getDimension(R.dimen.oval_notification_size);
-        final int imageColor = ((mValue & 0xF0F0F0) == 0xF0F0F0) ?
-                (mValue - 0x101010) : mValue;
+        final int imageColor = ((mCurrentValue & 0xF0F0F0) == 0xF0F0F0) ?
+                (mCurrentValue - 0x101010) : mCurrentValue;
         iView.setImageDrawable(createOvalShape(size, 0xFF000000 + imageColor));
         iView.setTag("preview");
-        /*iView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mEnabled) {
-                    showDialog(null);
-                }
-            }
-        });
-    }
-
-    @Override
-    public void setEnabled(boolean enabled) {
-        super.setEnabled(enabled);
-        if (mEnabled != enabled) {
-            mEnabled = enabled;
-        }*/
     }
 
     @Override
     public void onColorChanged(int color) {
-        mValue = color;
+        mCurrentValue = color;
         setPreviewColor();
         persistInt(color);
         try {
@@ -274,7 +226,6 @@ public class ColorPickerPreference extends Preference implements
     }
 
     public boolean onPreferenceClick(Preference preference) {
-        //showDialog(null);
         return false;
     }
 
@@ -284,7 +235,7 @@ public class ColorPickerPreference extends Preference implements
             return;
         }*/
 
-        mDialog = new ColorPickerDialog(getContext(), mValue, mShowLedPreview);
+        mDialog = new ColorPickerDialog(getContext(), mCurrentValue, mShowLedPreview);
         mDialog.setOnColorChangedListener(this);
         if (mAlphaSliderEnabled) {
             mDialog.setAlphaSliderVisible(true);
@@ -310,7 +261,7 @@ public class ColorPickerPreference extends Preference implements
                 .setNeutralButton(R.string.color_default, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            onSimpleColorChanged(mDefValue != 1 ? mDefValue : Color.WHITE);
+                            onSimpleColorChanged(mDefaultValue != 1 ? mDefaultValue : Color.WHITE);
                         }
                 })
                 .setCancelable(false);
@@ -435,8 +386,8 @@ public class ColorPickerPreference extends Preference implements
         onColorChanged(color);
     }
 
-    public void setDefaultColor(int color) {
-        mDefValue = color;
+    public void setDefaultValue(int value) {
+        mDefaultValue = value;
     }
 
     /**
