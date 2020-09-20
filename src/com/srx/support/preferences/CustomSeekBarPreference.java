@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package com.abc.support.preferences;
+package com.srx.support.preferences;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -33,7 +33,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import androidx.preference.*;
 
-import com.abc.support.R;
+import com.srx.support.R;
 
 public class CustomSeekBarPreference extends Preference implements SeekBar.OnSeekBarChangeListener {
     private final String TAG = getClass().getName();

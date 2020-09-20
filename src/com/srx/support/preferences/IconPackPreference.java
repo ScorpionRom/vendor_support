@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.abc.support.preferences;
+package com.srx.support.preferences;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.abc.support.R;
+import com.srx.support.R;
 
 public class IconPackPreference extends Preference {
 

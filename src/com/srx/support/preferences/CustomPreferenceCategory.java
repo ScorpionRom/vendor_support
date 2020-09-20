@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.abc.support.preferences;
+package com.srx.support.preferences;
 
 import android.content.Context;
 import android.util.AttributeSet;
 
 import androidx.preference.PreferenceCategory;
 
-import com.abc.support.R;
+import com.srx.support.R;
 
 public class CustomPreferenceCategory extends PreferenceCategory {
 

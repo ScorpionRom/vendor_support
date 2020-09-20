@@ -16,27 +16,27 @@
  * limitations under the License.
  */
 
-package com.abc.support.colorpicker;
+package com.srx.support.colorpicker;
 
 import android.content.Context;
 import android.util.AttributeSet;
 
-import com.abc.support.preferences.SecureSettingsStore;
+import com.srx.support.preferences.SystemSettingsStore;
 
-public class ColorPickerSecurePreference extends ColorPickerPreference {
+public class ColorPickerSystemPreference extends ColorPickerPreference {
 
-    public ColorPickerSecurePreference(Context context, AttributeSet attrs, int defStyle) {
+    public ColorPickerSystemPreference(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        setPreferenceDataStore(new SecureSettingsStore(context.getContentResolver()));
+        setPreferenceDataStore(new SystemSettingsStore(context.getContentResolver()));
     }
 
-    public ColorPickerSecurePreference(Context context, AttributeSet attrs) {
+    public ColorPickerSystemPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setPreferenceDataStore(new SecureSettingsStore(context.getContentResolver()));
+        setPreferenceDataStore(new SystemSettingsStore(context.getContentResolver()));
     }
 
-    public ColorPickerSecurePreference(Context context) {
+    public ColorPickerSystemPreference(Context context) {
         super(context, null);
-        setPreferenceDataStore(new SecureSettingsStore(context.getContentResolver()));
+        setPreferenceDataStore(new SystemSettingsStore(context.getContentResolver()));
     }
 }
